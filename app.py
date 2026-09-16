@@ -60,16 +60,22 @@ def procesar_txt(texto_traza):
         
         evento_limpio, es_error = None, False
         match_metodo = patron_metodo.search(bloque)
-        if match_metodo: evento_limpio = match_metodo.group(1).strip()
+        if match_metodo: 
+            evento_limpio = match_metodo.group(1).strip()
             
         match_respuesta = patron_respuesta.search(bloque)
         if match_respuesta:
             evento_limpio = match_respuesta.group(1).strip()
             if evento_limpio.startswith(('4', '5', '6')):
-                es_error, errores_encontrados.append(evento_limpio) = True, None
+                es_error = True
+                errores_encontrados.append(evento_limpio)
         
         if evento_limpio:
-            diagrama_mermaid += f'    "{origen}"--x"{destino}": {evento_limpio}\n' if es_error else f'    "{origen}"->>"{destino}": {evento_limpio}\n'
+            if es_error:
+                diagrama_mermaid += f'    "{origen}"--x"{destino}": {evento_limpio}\n'
+            else:
+                diagrama_mermaid += f'    "{origen}"->>"{destino}": {evento_limpio}\n'
+            
             mensajes.append({"origen": origen, "destino": destino, "evento": evento_limpio, "clase": determinar_clase_sip(evento_limpio)})
 
     return mensajes, diagrama_mermaid, errores_encontrados, list(call_ids)
@@ -112,7 +118,11 @@ def procesar_pcap(archivo_subido):
                         errores_encontrados.append(evento_limpio)
                 
                 if evento_limpio:
-                    diagrama_mermaid += f'    "{origen}"--x"{destino}": {evento_limpio}\n' if es_error else f'    "{origen}"->>"{destino}": {evento_limpio}\n'
+                    if es_error:
+                        diagrama_mermaid += f'    "{origen}"--x"{destino}": {evento_limpio}\n'
+                    else:
+                        diagrama_mermaid += f'    "{origen}"->>"{destino}": {evento_limpio}\n'
+                        
                     mensajes.append({"origen": origen, "destino": destino, "evento": evento_limpio, "clase": determinar_clase_sip(evento_limpio)})
         captura.close()
     finally:
